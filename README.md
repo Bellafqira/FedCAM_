@@ -27,6 +27,7 @@ scipy~=1.7.3
 matplotlib~=3.4.1
 torchvision~=0.12.0
 tqdm~=4.60.0
+geom_median
 
 # License :
 When using any code in this project, we would appreciate it if you could refer to this project.
