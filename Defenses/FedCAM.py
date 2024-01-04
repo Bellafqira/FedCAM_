@@ -203,20 +203,20 @@ class Server:
             Utils.save_to_json(self.accuracy_backdoor, self.dir_path,
                                f"{self.attack_type}_accuracy_{self.cf['nb_rounds']}")
 
-        save_path = f"{self.dir_path}/{self.attack_type}_{'With defence' if self.defence else 'No defence'}_clients_hist_{self.cf['nb_rounds']}.png"
+        save_path = f"{self.dir_path}/{self.attack_type}_{'With defence' if self.defence else 'No defence'}_clients_hist_{self.cf['nb_rounds']}.pdf"
         Utils.plot_hist(self.histo_selected_clients, x_info="Clients", y_info="Frequencies", title_info="", bins=1000,
                         save_path=save_path)
 
         # Plotting the testing accuracy of the global model
         title_info = f"Test Accuracy per Round for {self.cf['attacker_ratio'] * 100}% of {self.attack_type} with {('Defence' if self.defence else 'No Defence')}"
-        save_path = f"{self.dir_path}/{self.attack_type}_{'With defence' if self.defence else 'No defence'}_Test_Accuracy_{self.cf['nb_rounds']}.png"
+        save_path = f"{self.dir_path}/{self.attack_type}_{'With defence' if self.defence else 'No defence'}_Test_Accuracy_{self.cf['nb_rounds']}.pdf"
         Utils.plot_accuracy(self.accuracy, x_info='Round', y_info='Test Accuracy', title_info=title_info,
                             save_path=save_path)
 
         if self.attack_type == "NaiveBackdoor" or self.attack_type == "SquareBackdoor":
             # Plotting the backdoor accuracy
             title_info = f"Backdoor Accuracy per Round for {self.cf['attacker_ratio'] * 100}% of {self.attack_type} with {('Defence' if self.defence else 'No Defence')}"
-            save_path = f"{self.dir_path}/{self.attack_type}_{'With defence' if self.defence else 'No defence'}_Backdoor_Accuracy_{self.cf['nb_rounds']}.png"
+            save_path = f"{self.dir_path}/{self.attack_type}_{'With defence' if self.defence else 'No defence'}_Backdoor_Accuracy_{self.cf['nb_rounds']}.pdf"
             Utils.plot_accuracy(self.accuracy_backdoor, x_info='Round', y_info='backdoor Accuracy',
                                 title_info=title_info, save_path=save_path)
 
