@@ -12,20 +12,20 @@ configs_fedCVAE = {
 
     #FL Settings
     "data_dist": "IID", # For the moment we are considering only the IID data distribution
-    "nb_rounds": 10,  # number of communication rounds for federated learning and the Dimension of FedCVAE condition
+    "nb_rounds": 100,  # number of communication rounds for federated learning and the Dimension of FedCVAE condition
     "aggregation": "FedAvg",  # Aggregation method for model updates
     "num_clients": 1000,  # Total number of clients in the federated learning system
     "nb_clients_per_round": 50,  # Number of clients selected for each round
     "validation_size": 100, # Validation loader size
 
     # CVAE Settings
+    "condition_dim": 100,  # Dimension of the condition for FedCVAE
     "latent_dim": 8,  # Dimension of the latent space in CVAE
     "hidden_dim": 100,  # Dimension of the hidden layer in CVAE
-    "condition_dim": 200,  # Dimension of the condition for FedCVAE
+    "selected_weights_dim": 64,  # Dimension of the surrogate vector and of the input for CVAE
 
     # Attacks/Defenses Settings
     "with_defence": True,  # Flag indicating if defense mechanism is enabled
-    "selected_weights_dim": 128,  # Dimension of the surrogate vector and of the input for CVAE
     "attacker_ratio": 0.3,  # Ratio of attackers in the system
     "attack_type": 'AdditiveNoise',  # Type of attack (e.g., SameValue, AdditiveNoise)
     # 0: 'NoAttack' 1: 'AdditiveNoise', 2: 'SameValue', 3: 'SignFlip',  4: 'NaiveBackdoor', 5: 'SquareBackdoor'

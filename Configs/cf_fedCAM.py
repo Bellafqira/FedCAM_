@@ -11,17 +11,15 @@ configs_fedCAM = {
 
     #FL Settings
     "data_dist": "IID", # For the moment we are considering only the IID data distribution
-    "nb_rounds": 10,  # Maximum number of communication rounds for federated learning
+    "nb_rounds": 100,  # Maximum number of communication rounds for federated learning
     "aggregation": "FedAvg",  # Aggregation method for model updates
-    "input_dim": 784,  # Dimension of input data
     "num_clients": 1000,  # Total number of clients in the federated learning system
     "nb_clients_per_round": 50,  # Number of clients selected for each round
-    "batch_size_test": 128,  # Batch size for testing
 
     # CVAE Settings
     "condition_dim": 10,  # Dimension of the condition in CVAE
     "latent_dim": 8,  # Dimension of the latent space in CVAE
-    "hidden_dim": 32,  # Dimension of the hidden layer in CVAE
+    "hidden_dim": 100,  # Dimension of the hidden layer in CVAE
     "cvae_input_dim": 64,  # Dimension of the input for CVAE and the size of the activation maps ("activation_size")
     # which is the output of FC2 in our case 128
     "cvae_nb_ep": 10,  # Number of epochs for training a CVAE model
@@ -39,6 +37,10 @@ configs_fedCAM = {
     # Parameters of  NaiveBackdoor and SquareBackdoor attacks
     "source": 8,
     "target": 3,
-    "square_size": 10
+    "square_size": 10,
+
+    # GeoMEd parameters
+    "eps": 1e-8,  # Epsilon value for numerical stability of goeMed
+    "iter": 100,  # Maximum number of iterations
 
 }
