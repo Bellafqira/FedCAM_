@@ -10,7 +10,6 @@ configs_fedCVAE = {
     "wd": 1e-5,  # Weight decay for Clients model
     "activation_size": 128,
 
-
     #FL Settings
     "data_dist": "IID", # For the moment we are considering only the IID data distribution
     "nb_rounds": 10,  # number of communication rounds for federated learning and the Dimension of FedCVAE condition
@@ -23,7 +22,6 @@ configs_fedCVAE = {
     "latent_dim": 8,  # Dimension of the latent space in CVAE
     "hidden_dim": 100,  # Dimension of the hidden layer in CVAE
     "condition_dim": 200,  # Dimension of the condition for FedCVAE
-
 
     # Attacks/Defenses Settings
     "with_defence": True,  # Flag indicating if defense mechanism is enabled

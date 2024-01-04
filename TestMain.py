@@ -15,7 +15,7 @@ class TestMain(unittest.TestCase):
         if algo == "fedCam":
             from Defenses.FedCAM import Server
             model = MLP(configs_fedCAM["cvae_input_dim"]).to(device)
-            server = Server(hp=configs_fedCAM, model=model)
+            server = Server(cf=configs_fedCAM, model=model)
             server.run()
         # Test for the fedCvae algorithm
         elif algo == "fedCvae":  # FedCVAE in this case

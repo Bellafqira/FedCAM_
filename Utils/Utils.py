@@ -45,7 +45,7 @@ class Utils:
         mse = F.mse_loss(recon_x, x, reduction='mean')
         # MSE = F.binary_cross_entropy(recon_x, x, reduction='mean')
         kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-        return mse + 0*kld
+        return mse + kld
 
 
     @staticmethod

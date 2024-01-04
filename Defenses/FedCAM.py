@@ -10,49 +10,49 @@ from Models.MLP import MLP
 from Utils.Utils import Utils
 
 class Server:
-    def __init__(self, hp=None, model=None):
+    def __init__(self, cf=None, model=None):
         super().__init__()
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.hp = hp
+        self.cf = cf
 
         # Saving directory
-        self.dir_path = f"Results/FedCAM/{self.hp['data_dist']}_{int(self.hp['attacker_ratio'] * 100)}_{self.hp['attack_type']}"
-        self.dir_path += "/Defence" if self.hp["with_defence"] else "/NoDefence"
+        self.dir_path = f"Results/FedCAM/{self.cf['data_dist']}_{int(self.cf['attacker_ratio'] * 100)}_{self.cf['attack_type']}"
+        self.dir_path += "/Defence" if self.cf["with_defence"] else "/NoDefence"
         os.makedirs(self.dir_path, exist_ok=True)
 
-        self.activation_size = hp["cvae_input_dim"]
-        self.num_classes = hp["num_classes"]
-        self.nb_rounds = hp["nb_rounds"]
+        self.activation_size = cf["cvae_input_dim"]
+        self.num_classes = cf["num_classes"]
+        self.nb_rounds = cf["nb_rounds"]
         self.global_model = model.to(self.device) if model else MLP(self.activation_size).to(self.device)
-        self.defence = hp["with_defence"]
-        self.attack_type = hp["attack_type"]
+        self.defence = cf["with_defence"]
+        self.attack_type = cf["attack_type"]
 
         self.config_FL = {
-            "num_clients": hp["num_clients"],
-            "attackers_ratio": hp["attacker_ratio"],
-            "nb_clients_per_round": hp["nb_clients_per_round"],
-            "batch_size": hp["batch_size"]
+            "num_clients": cf["num_clients"],
+            "attackers_ratio": cf["attacker_ratio"],
+            "nb_clients_per_round": cf["nb_clients_per_round"],
+            "batch_size": cf["batch_size"]
         }
 
-        self.config_vae = {
-            "cvae_nb_ep": hp["cvae_nb_ep"],
-            "cvae_lr": hp["cvae_lr"],
-            "cvae_wd": hp["cvae_wd"],
-            "cvae_gamma": hp["cvae_gamma"],
+        self.config_cvae = {
+            "cvae_nb_ep": cf["cvae_nb_ep"],
+            "cvae_lr": cf["cvae_lr"],
+            "cvae_wd": cf["cvae_wd"],
+            "cvae_gamma": cf["cvae_gamma"],
         }
 
-        self.train_data = Utils.distribute_iid_data_among_clients(self.config_FL["num_clients"], hp["batch_size"])
+        self.train_data = Utils.distribute_iid_data_among_clients(self.config_FL["num_clients"], cf["batch_size"])
         self.clients = Utils.gen_clients(self.config_FL, self.attack_type, self.train_data)
         self.cvae_trained = False
 
-        self.trigger_loader, self.test_loader = Utils.get_test_data(hp["size_trigger"])
+        self.trigger_loader, self.test_loader = Utils.get_test_data(cf["size_trigger"])
 
         self.cvae = CVAE(
-            input_dim=hp["cvae_input_dim"],
-            condition_dim=self.hp["condition_dim"],
-            hidden_dim=self.hp["hidden_dim"],
-            latent_dim=self.hp["latent_dim"]
+            input_dim=cf["cvae_input_dim"],
+            condition_dim=self.cf["condition_dim"],
+            hidden_dim=self.cf["hidden_dim"],
+            latent_dim=self.cf["latent_dim"]
         ).to(self.device)
 
 
@@ -65,20 +65,14 @@ class Server:
 
         self.histo_selected_clients = torch.tensor([])
 
-    def one_hot_encoding(self, current_round):
-        one_hot = torch.zeros(self.hp['condition_dim']).to(self.device)
-        one_hot[current_round] = 1.0
-        return one_hot
-
-
     def train_cvae(self):
         if self.cvae_trained:
             print("CVAE is already trained, skipping re-training.")
             return
 
-        num_epochs = self.config_vae["cvae_nb_ep"]
-        optimizer = torch.optim.Adam(self.cvae.parameters(), lr=self.config_vae["cvae_lr"], weight_decay=self.config_vae["cvae_wd"])
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[200, 300], gamma=self.config_vae["cvae_gamma"])
+        num_epochs = self.config_cvae["cvae_nb_ep"]
+        optimizer = torch.optim.Adam(self.cvae.parameters(), lr=self.config_cvae["cvae_lr"], weight_decay=self.config_cvae["cvae_wd"])
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[200, 300], gamma=self.config_cvae["cvae_gamma"])
 
         model = deepcopy(self.global_model)
         model.eval()
@@ -113,7 +107,7 @@ class Server:
 
         clients_re = []
 
-        clients_act = torch.zeros(size=(len(selected_clients),  self.hp["size_trigger"], self.activation_size)).to(self.device)
+        clients_act = torch.zeros(size=(len(selected_clients), self.cf["size_trigger"], self.activation_size)).to(self.device)
         labels_cat = torch.tensor([]).to(self.device)
 
         for client_nb, client_model in enumerate(selected_clients):
@@ -146,14 +140,14 @@ class Server:
                 self.train_cvae()
                 self.cvae_trained = True
 
-        for rounds in range(self.hp["nb_rounds"]):
+        for rounds in range(self.cf["nb_rounds"]):
             torch.cuda.empty_cache()
 
             selected_clients = Utils.select_clients(self.clients, self.config_FL["nb_clients_per_round"])
 
             for client in selected_clients:
                 client.set_model(deepcopy(self.global_model).to(self.device))
-                client.train(self.hp)
+                client.train(self.cf)
 
             if self.defence:
                 clients_re = self.compute_reconstruction_error(selected_clients)
@@ -195,38 +189,38 @@ class Server:
 
             if self.attack_type == "NaiveBackdoor" or self.attack_type == "SquareBackdoor":
                 self.accuracy_backdoor.append(Utils.test_backdoor(self.global_model, self.device, self.test_loader,
-                                                                  self.attack_type, self.hp["source"],
-                                                                  self.hp["target"], self.hp["square_size"]))
+                                                                  self.attack_type, self.cf["source"],
+                                                                  self.cf["target"], self.cf["square_size"]))
 
-            print(f"Round {rounds + 1}/{self.hp['nb_rounds']} server accuracy: {self.accuracy[-1] * 100:.2f}%")
+            print(f"Round {rounds + 1}/{self.cf['nb_rounds']} server accuracy: {self.accuracy[-1] * 100:.2f}%")
             if self.attack_type == "NaiveBackdoor" or self.attack_type == "SquareBackdoor":
                 print(
-                    f"Round {rounds + 1}/{self.hp['nb_rounds']} attacker accuracy: {self.accuracy_backdoor[-1] * 100:.2f}%")
+                    f"Round {rounds + 1}/{self.cf['nb_rounds']} attacker accuracy: {self.accuracy_backdoor[-1] * 100:.2f}%")
 
         # Saving The accuracies of the Global model on the testing set and the backdoor set
-        Utils.save_to_json(self.accuracy, self.dir_path, f"test_accuracy_{self.hp['nb_rounds']}")
+        Utils.save_to_json(self.accuracy, self.dir_path, f"test_accuracy_{self.cf['nb_rounds']}")
         if self.attack_type == "NaiveBackdoor" or self.attack_type == "SquareBackdoor":
             Utils.save_to_json(self.accuracy_backdoor, self.dir_path,
-                               f"{self.attack_type}_accuracy_{self.hp['nb_rounds']}")
+                               f"{self.attack_type}_accuracy_{self.cf['nb_rounds']}")
 
-        save_path = f"{self.dir_path}/{self.attack_type}_{'With defence' if self.defence else 'No defence'}_clients_hist_{self.hp['nb_rounds']}.png"
+        save_path = f"{self.dir_path}/{self.attack_type}_{'With defence' if self.defence else 'No defence'}_clients_hist_{self.cf['nb_rounds']}.png"
         Utils.plot_hist(self.histo_selected_clients, x_info="Clients", y_info="Frequencies", title_info="", bins=1000,
                         save_path=save_path)
 
         # Plotting the testing accuracy of the global model
-        title_info = f"Test Accuracy per Round for {self.hp['attacker_ratio'] * 100}% of {self.attack_type} with {('Defence' if self.defence else 'No Defence')}"
-        save_path = f"{self.dir_path}/{self.attack_type}_{'With defence' if self.defence else 'No defence'}_Test_Accuracy_{self.hp['nb_rounds']}.png"
+        title_info = f"Test Accuracy per Round for {self.cf['attacker_ratio'] * 100}% of {self.attack_type} with {('Defence' if self.defence else 'No Defence')}"
+        save_path = f"{self.dir_path}/{self.attack_type}_{'With defence' if self.defence else 'No defence'}_Test_Accuracy_{self.cf['nb_rounds']}.png"
         Utils.plot_accuracy(self.accuracy, x_info='Round', y_info='Test Accuracy', title_info=title_info,
                             save_path=save_path)
 
         if self.attack_type == "NaiveBackdoor" or self.attack_type == "SquareBackdoor":
             # Plotting the backdoor accuracy
-            title_info = f"Backdoor Accuracy per Round for {self.hp['attacker_ratio'] * 100}% of {self.attack_type} with {('Defence' if self.defence else 'No Defence')}"
-            save_path = f"{self.dir_path}/{self.attack_type}_{'With defence' if self.defence else 'No defence'}_Backdoor_Accuracy_{self.hp['nb_rounds']}.png"
+            title_info = f"Backdoor Accuracy per Round for {self.cf['attacker_ratio'] * 100}% of {self.attack_type} with {('Defence' if self.defence else 'No Defence')}"
+            save_path = f"{self.dir_path}/{self.attack_type}_{'With defence' if self.defence else 'No defence'}_Backdoor_Accuracy_{self.cf['nb_rounds']}.png"
             Utils.plot_accuracy(self.accuracy_backdoor, x_info='Round', y_info='backdoor Accuracy',
                                 title_info=title_info, save_path=save_path)
 
         # Plotting the histogram of the defense system
-        Utils.plot_histogram(self.hp, self.nb_attackers_passed_defence_history, self.nb_attackers_history,
+        Utils.plot_histogram(self.cf, self.nb_attackers_passed_defence_history, self.nb_attackers_history,
                              self.nb_benign_passed_defence_history, self.nb_benign_history, self.config_FL,
                              self.attack_type, self.defence, self.dir_path)

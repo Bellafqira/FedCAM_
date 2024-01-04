@@ -11,7 +11,7 @@ configs_fedCAM = {
 
     #FL Settings
     "data_dist": "IID", # For the moment we are considering only the IID data distribution
-    "nb_rounds": 2,  # Maximum number of communication rounds for federated learning
+    "nb_rounds": 10,  # Maximum number of communication rounds for federated learning
     "aggregation": "FedAvg",  # Aggregation method for model updates
     "input_dim": 784,  # Dimension of input data
     "num_clients": 1000,  # Total number of clients in the federated learning system
@@ -29,12 +29,11 @@ configs_fedCAM = {
     "cvae_wd": 0,  # Weight decay for CVAE model 1e-5
     "cvae_gamma": 1,  # Gamma value for CVAE model
 
-
     # Attacks/Defenses Settings
     "with_defence": True,  # Flag indicating if defense mechanism is enabled
     "size_trigger": 100,  # Trigger size for defense mechanism
     "attacker_ratio": 0.3,  # Ratio of attackers in the system
-    "attack_type": 'SignFlip',  # Type of attack (e.g., SameValue, AdditiveNoise)
+    "attack_type": 'NaiveBackdoor',  # Type of attack (e.g., SameValue, AdditiveNoise)
     # 0: 'NoAttack' 1: 'AdditiveNoise', 2: 'SameValue', 3: 'SignFlip',  4: 'NaiveBackdoor', 5: 'SquareBackdoor'
 
     # Parameters of  NaiveBackdoor and SquareBackdoor attacks
