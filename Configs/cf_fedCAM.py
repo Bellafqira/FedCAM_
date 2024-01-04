@@ -35,8 +35,8 @@ configs_fedCAM = {
     # 0: 'NoAttack' 1: 'AdditiveNoise', 2: 'SameValue', 3: 'SignFlip',  4: 'NaiveBackdoor', 5: 'SquareBackdoor'
 
     # Parameters of  NaiveBackdoor and SquareBackdoor attacks
-    "source": 8,
-    "target": 3,
+    "source": 7,
+    "target": 5,
     "square_size": 10,
 
     # GeoMEd parameters
