@@ -21,7 +21,7 @@ class TestMain(unittest.TestCase):
         elif algo == "fedCvae":  # FedCVAE in this case
             from Defenses.FedCVAE import Server
             model = MLP(configs_fedCVAE["activation_size"]).to(device)
-            server = Server(hp=configs_fedCVAE, model=model)
+            server = Server(cf=configs_fedCVAE, model=model)
             server.run()
         else:
             # Print a message if the algorithm argument is not valid
