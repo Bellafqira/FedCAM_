@@ -97,7 +97,7 @@ class Utils:
                   f"with {'Defence' if defence else 'No Defence'}")
 
         plt.legend()
-        plt.savefig(f"{dir_path}/{attack_type}_{'With defence' if defence else 'No defence'}_Histogram_{hp['nb_rounds']}.png")
+        plt.savefig(f"{dir_path}/{attack_type}_{'With defence' if defence else 'No defence'}_Histogram_{hp['nb_rounds']}.pdf")
 
         plt.show()
 
