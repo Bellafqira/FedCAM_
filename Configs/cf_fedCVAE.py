@@ -26,7 +26,7 @@ configs_fedCVAE = {
 
     # Attacks/Defenses Settings
     "with_defence": True,  # Flag indicating if defense mechanism is enabled
-    "attacker_ratio": 0.3,  # Ratio of attackers in the system
+    "attacker_ratio": 0.1,  # Ratio of attackers in the system
     "attack_type": 'AdditiveNoise',  # Type of attack (e.g., SameValue, AdditiveNoise)
     # 0: 'NoAttack' 1: 'AdditiveNoise', 2: 'SameValue', 3: 'SignFlip',  4: 'NaiveBackdoor', 5: 'SquareBackdoor'
 

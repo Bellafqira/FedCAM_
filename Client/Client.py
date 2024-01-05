@@ -74,7 +74,7 @@ class Client:
 
     def additive_noise(self):
         for param in self.model.parameters():
-            noise = torch.normal(mean=0.0, std=1.0, size=param.data.shape, device=param.device)
+            noise = torch.normal(mean=0.0, std=20, size=param.data.shape, device=param.device)
             param.data += noise
 
     def same_value(self):
@@ -83,7 +83,7 @@ class Client:
 
     def sign_flip(self):
         for param in self.model.parameters():
-            param.data *= -1
+            param.data *= -4
 
 
 def square_backdoor(data, labels, source, target, square_size):
