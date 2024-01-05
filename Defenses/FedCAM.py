@@ -16,14 +16,13 @@ class Server:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.cf = cf
 
-         # Saving directory
+        # Saving directory
         if not cf["with_defence"]:
             self.dir_path = f"Results/NoDefence/{self.cf['data_dist']}_{int(self.cf['attacker_ratio'] * 100)}_{self.cf['attack_type']}"
         else :
             self.dir_path = f"Results/FedCAM/{self.cf['data_dist']}_{int(self.cf['attacker_ratio'] * 100)}_{self.cf['attack_type']}"
 
         os.makedirs(self.dir_path, exist_ok=True)
-
 
         self.activation_size = cf["cvae_input_dim"]
         self.num_classes = cf["num_classes"]
@@ -74,24 +73,43 @@ class Server:
             print("CVAE is already trained, skipping re-training.")
             return
 
-        num_epochs = self.config_cvae["cvae_nb_ep"]
-        optimizer = torch.optim.Adam(self.cvae.parameters(), lr=self.config_cvae["cvae_lr"], weight_decay=self.config_cvae["cvae_wd"])
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[200, 300], gamma=self.config_cvae["cvae_gamma"])
+        init_ep = 10
+        labels_act = 0
+        input_models_act =  torch.zeros(size=(init_ep, self.cf["size_trigger"], self.activation_size)).to(self.device)
+        input_cvae_model = deepcopy(self.global_model)
 
-        model = deepcopy(self.global_model)
-        model.eval()
+        criterion = torch.nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(input_cvae_model.parameters(), lr=self.cf["lr"], weight_decay=self.cf["wd"])
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        for epoch in range(init_ep):
+            for data, labels in self.trigger_loader:
+                data, labels = data.to(device), labels.to(device)
+                outputs = input_cvae_model(data)
+                loss = criterion(outputs, labels)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                input_models_act[epoch] = input_cvae_model.get_activations(data)
+                labels_act = labels
+                break
+
+        gm = compute_geometric_median(input_models_act.cpu(), weights=None)
+        input_models_act = input_models_act - gm.median.to(self.device)
+        input_models_act = torch.sigmoid(input_models_act).detach()
+
+        num_epochs = self.config_cvae["cvae_nb_ep"]
+        optimizer = torch.optim.Adam(self.cvae.parameters(), lr=self.config_cvae["cvae_lr"],
+                                     weight_decay=self.config_cvae["cvae_wd"])
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[200, 300],
+                                                         gamma=self.config_cvae["cvae_gamma"])
 
         for epoch in range(num_epochs):
             train_loss = 0
-            loop = tqdm(self.trigger_loader, leave=True)
+            loop = tqdm(input_models_act, leave=True)
+            for batch_idx, activation in enumerate(loop):
 
-            for batch_idx, (data, label) in enumerate(loop):
-                data, label = data.to(self.device), label.to(self.device)
-                activation = self.global_model.get_activations(data)
-                activation = torch.sigmoid(activation)
-
-                condition = Utils.one_hot_encoding(label, self.num_classes, self.device)
-
+                condition = Utils.one_hot_encoding(labels_act, self.num_classes, self.device)
                 recon_batch, mu, logvar = self.cvae(activation, condition)
                 loss = Utils.cvae_loss(recon_batch, activation, mu, logvar)
 
@@ -125,7 +143,7 @@ class Server:
 
         gm = compute_geometric_median(clients_act.cpu(), weights=None)
         clients_act = clients_act - gm.median.to(self.device)
-        clients_act = torch.abs(clients_act)
+        # clients_act = torch.abs(clients_act)
         clients_act = torch.sigmoid(clients_act)
 
         for client_act in clients_act:
@@ -135,7 +153,6 @@ class Server:
             clients_re.append(mse)
 
         return clients_re
-
 
     def run(self):
 
