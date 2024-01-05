@@ -16,9 +16,9 @@ Backdooring attack (add pattern attack and label flipping attack);
 # Step-by-step Guide to Running the Code:
 1. Configure Hyperparameters
 2. Run the script using Python
-   - python .\TestMain.py -algo fedCam
-   or
-   - python .\TestMain.py -algo fedCvae
+   - python TestMain.py -algo fedCam
+   - or
+   - python TestMain.py -algo fedCvae
 
 # requirements : 
 torch~=1.11.0
