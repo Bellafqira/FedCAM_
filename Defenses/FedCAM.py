@@ -16,10 +16,14 @@ class Server:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.cf = cf
 
-        # Saving directory
-        self.dir_path = f"Results/FedCAM/{self.cf['data_dist']}_{int(self.cf['attacker_ratio'] * 100)}_{self.cf['attack_type']}"
-        self.dir_path += "/Defence" if self.cf["with_defence"] else "/NoDefence"
+         # Saving directory
+        if not cf["with_defence"]:
+            self.dir_path = f"Results/NoDefence/{self.cf['data_dist']}_{int(self.cf['attacker_ratio'] * 100)}_{self.cf['attack_type']}"
+        else :
+            self.dir_path = f"Results/FedCAM/{self.cf['data_dist']}_{int(self.cf['attacker_ratio'] * 100)}_{self.cf['attack_type']}"
+
         os.makedirs(self.dir_path, exist_ok=True)
+
 
         self.activation_size = cf["cvae_input_dim"]
         self.num_classes = cf["num_classes"]
