@@ -20,7 +20,7 @@ Backdooring attack (add pattern attack and label flipping attack);
    - or
    - python TestMain.py -algo fedCvae
 
-# requirements : 
+# Requirements : 
 torch~=1.11.0
 numpy~=1.21.5
 scipy~=1.7.3
