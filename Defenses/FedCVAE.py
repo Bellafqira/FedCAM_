@@ -22,7 +22,7 @@ class Server:
         if not cf["with_defence"]:
             self.dir_path = f"Results/NoDefence/{self.cf['data_dist']}_{int(self.cf['attacker_ratio'] * 100)}_{self.cf['attack_type']}"
         else :
-            self.dir_path = f"Results/FedCAM/{self.cf['data_dist']}_{int(self.cf['attacker_ratio'] * 100)}_{self.cf['attack_type']}"
+            self.dir_path = f"Results/FedCVAE/{self.cf['data_dist']}_{int(self.cf['attacker_ratio'] * 100)}_{self.cf['attack_type']}"
 
         os.makedirs(self.dir_path, exist_ok=True)
 
