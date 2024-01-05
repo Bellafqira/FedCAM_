@@ -29,6 +29,14 @@ torchvision~=0.12.0
 tqdm~=4.60.0
 geom_median
 
+# Acknowledgments
+
+This project utilizes the `compute_geometric_median` function from the `geom_median.torch` library for computing the geometric median. We extend our gratitude to the authors of the research that inspired this implementation:
+
+Pillutla, K., Kakade, S. M., & Harchaoui, Z. (2022). Robust Aggregation for Federated Learning. IEEE Transactions on Signal Processing, 70, 1142-1154. doi:10.1109/TSP.2022.3153135
+
+The code is available at their GitHub repository: [geom_median](https://github.com/krishnap25/geom_median).
+
 # License :
 When using any code in this project, we would appreciate it if you could refer to this project.
 
